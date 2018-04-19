@@ -69,7 +69,7 @@ Shader "Aquarius Max/Banner Shader"
                 float4 staticSwitch22 = _BaseBannerColor;
             #endif
             float2 uv_TexCoord24 = i.uv_texcoord * _BannerBackImage_ST.xy + _BannerBackImage_ST.zw;
-            float4 tex2DNode16 = tex2D( _BannerBackImage, ( float2( -1,1 ) * uv_TexCoord24 ) );
+            float4 tex2DNode16 = tex2D( _BannerBackImage, ( uv_TexCoord24 ) );
             float4 lerpResult17 = lerp( _BaseBannerColor , tex2DNode16 , tex2DNode16.a);
             #ifdef _USEBACKIMAGE_ON
                 float4 staticSwitch23 = lerpResult17;
