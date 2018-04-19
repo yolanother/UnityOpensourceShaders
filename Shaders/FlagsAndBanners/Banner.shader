@@ -20,7 +20,7 @@
 *  Originally written for use with Aquarius Max's Fantasy Castle pack.
 */
 
-Shader "Aquarius Max/Banner"
+Shader "Aquarius Max/Banner Shader"
 {
     Properties
     {
@@ -29,9 +29,9 @@ Shader "Aquarius Max/Banner"
         _BannerFrontImage("Banner Front Image", 2D) = "white" {}
         [Toggle(_USEBACKIMAGE_ON)] _UseBackImage("Use Back Image", Float) = 0
         _BannerBackImage("Banner Back Image", 2D) = "white" {}
+        _BannerHoleMask("Banner Hole Mask", 2D) = "white" {}
         [HideInInspector] _texcoord( "", 2D ) = "white" {}
         [HideInInspector] __dirty( "", Int ) = 1
-        _BannerHoleMask("Banner Hole Mask", 2D) = "white" {}
     }
 
     SubShader
@@ -68,9 +68,9 @@ Shader "Aquarius Max/Banner"
             #else
                 float4 staticSwitch22 = _BaseBannerColor;
             #endif
-            float2 uv_BannerBackImage = i.uv_texcoord * _BannerBackImage_ST.xy + _BannerBackImage_ST.zw;
-            float4 tex2DNode16 = tex2D( _BannerBackImage, uv_BannerBackImage );
-            float4 lerpResult17 = lerp( tex2DNode16 , _BaseBannerColor , tex2DNode16.a);
+            float2 uv_TexCoord24 = i.uv_texcoord * _BannerBackImage_ST.xy + _BannerBackImage_ST.zw;
+            float4 tex2DNode16 = tex2D( _BannerBackImage, ( float2( -1,1 ) * uv_TexCoord24 ) );
+            float4 lerpResult17 = lerp( _BaseBannerColor , tex2DNode16 , tex2DNode16.a);
             #ifdef _USEBACKIMAGE_ON
                 float4 staticSwitch23 = lerpResult17;
             #else
