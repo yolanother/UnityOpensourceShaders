@@ -24,106 +24,74 @@ Shader "Aquarius Max/Advanced Banner Shader"
 {
 	Properties
 	{
-		[HideInInspector] _VTInfoBlock( "VT( auto )", Vector ) = ( 0, 0, 0, 0 )
-		[Header(BannerImage)]
-        _BannerBaseColor("Banner Base Color", Color) = (0,0,0,0)
-		_BackgroundAlbedo("Background Albedo", 2D) = "white" {}
-		_BackgroundNormal("Background Normal", 2D) = "white" {}
-        [Toggle(_SIGILONBACK_ON)] _SigilonBack("Sigil on Back", Float) = 0
-        [Toggle(_SIGILONFRONT_ON)] _SigilonFront("Sigil on Front", Float) = 0
+		[Header(Sigil)]
+        _Sigil("Sigil Albedo", 2D) = "white" {}
+        _SigilNormal("Sigil Normal", 2D) = "white" {}
+		[Toggle]_Tile("Tile Sigil", Float) = 0
+		_SigilScale("Sigil Scale", Float) = 1
+		_SigilOffset("Sigil Offset", Vector) = (0,0,0,0)
 
-        _SigilAlbedo("Sigil Albedo", 2D) = "white" {}
-		_SigilNormal("Sigil Normal", 2D) = "white" {}
-        
-        _BackSigilAlbedo("Back Sigil Albedo", 2D) = "white" {}
-		_BackSigilNormal("Back Sigil Normal", 2D) = "white" {}
-        
-		_BannerHoleMask("Banner Hole Mask", 2D) = "white" {}
-        
-		_Metallic("Metallic", Range( 0 , 1)) = 0
-		_Smoothness("Smoothness", Range( 0 , 1)) = 0
-        
+        [Header(BaseTexture)]
+        _BannerColor("Banner Color", Color) = (1,1,1,1)
+        _BaseBanner("Base Banner Albedo", 2D) = "white" {}
+		_BaseBannerNormal("Base Banner Normal", 2D) = "white" {}
+		[Toggle]_TwoSidedSigil("Two Sided Sigil", Float) = 0
+		_Tear("Tear", 2D) = "white" {}
 		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 		[HideInInspector] __dirty( "", Int ) = 1
 	}
 
 	SubShader
 	{
-		Tags{ "RenderType" = "Transparent"  "Queue" = "Transparent+0" "IgnoreProjector" = "True" "Amplify" = "True"  }
+		Tags{ "RenderType" = "Transparent"  "Queue" = "Transparent+0" "IgnoreProjector" = "True" }
 		Cull Off
 		CGINCLUDE
 		#include "UnityPBSLighting.cginc"
 		#include "Lighting.cginc"
 		#pragma target 3.0
-		#pragma shader_feature _SIGILONFRONT_ON
-		#pragma shader_feature _SIGILONBACK_ON
 		struct Input
 		{
 			float2 uv_texcoord;
 			fixed ASEVFace : VFACE;
 		};
 
-		uniform sampler2D _BackgroundNormal;
+		uniform sampler2D _BaseBannerNormal;
+		uniform float4 _BaseBannerNormal_ST;
 		uniform sampler2D _SigilNormal;
-		uniform float4 _SigilNormal_ST;
-		uniform sampler2D _BackSigilNormal;
-		uniform float4 _BackSigilNormal_ST;
-		uniform sampler2D _BackgroundAlbedo;
-		uniform float4 _BannerBaseColor;
-		uniform sampler2D _SigilAlbedo;
-		uniform float4 _SigilAlbedo_ST;
-		uniform sampler2D _BackSigilAlbedo;
-		uniform float4 _BackSigilAlbedo_ST;
-		uniform float _Metallic;
-		uniform float _Smoothness;
-		uniform sampler2D _BannerHoleMask;
-		uniform float4 _BannerHoleMask_ST;
+		uniform float _Tile;
+		uniform float _SigilScale;
+		uniform float2 _SigilOffset;
+		uniform float4 _BannerColor;
+		uniform sampler2D _BaseBanner;
+		uniform float4 _BaseBanner_ST;
+		uniform sampler2D _Sigil;
+		uniform float _TwoSidedSigil;
+		uniform sampler2D _Tear;
+		uniform float4 _Tear_ST;
 
 		void surf( Input i , inout SurfaceOutputStandard o )
 		{
-			float4 _Color3 = float4(1,1,1,1);
-			float4 temp_output_9_0_g6 = ( tex2D( _BackgroundNormal, float2( 0,0 ) ) * _Color3 );
-			float2 uv_SigilNormal = i.uv_texcoord * _SigilNormal_ST.xy + _SigilNormal_ST.zw;
-			float4 tex2DNode10_g6 = tex2D( _SigilNormal, uv_SigilNormal );
-			float4 lerpResult12_g6 = lerp( temp_output_9_0_g6 , ( tex2DNode10_g6 * _Color3 ) , tex2DNode10_g6.a);
-			#ifdef _SIGILONFRONT_ON
-				float4 staticSwitch31_g6 = lerpResult12_g6;
-			#else
-				float4 staticSwitch31_g6 = temp_output_9_0_g6;
-			#endif
-			float2 uv_TexCoord4_g6 = i.uv_texcoord * _BackSigilNormal_ST.xy + _BackSigilNormal_ST.zw;
-			float4 tex2DNode8_g6 = tex2D( _BackSigilNormal, ( float2( -1,1 ) * uv_TexCoord4_g6 ) );
-			float4 lerpResult11_g6 = lerp( temp_output_9_0_g6 , ( tex2DNode8_g6 * _Color3 ) , tex2DNode8_g6.a);
-			#ifdef _SIGILONBACK_ON
-				float4 staticSwitch30_g6 = lerpResult11_g6;
-			#else
-				float4 staticSwitch30_g6 = temp_output_9_0_g6;
-			#endif
-			float4 switchResult15_g6 = (((i.ASEVFace>0)?(staticSwitch31_g6):(staticSwitch30_g6)));
-			o.Normal = switchResult15_g6.rgb;
-			float4 temp_output_9_0_g5 = ( tex2D( _BackgroundAlbedo, float2( 0,0 ) ) * _BannerBaseColor );
-			float2 uv_SigilAlbedo = i.uv_texcoord * _SigilAlbedo_ST.xy + _SigilAlbedo_ST.zw;
-			float4 tex2DNode10_g5 = tex2D( _SigilAlbedo, uv_SigilAlbedo );
-			float4 lerpResult12_g5 = lerp( temp_output_9_0_g5 , ( tex2DNode10_g5 * float4(0,0,0,0) ) , tex2DNode10_g5.a);
-			#ifdef _SIGILONFRONT_ON
-				float4 staticSwitch31_g5 = lerpResult12_g5;
-			#else
-				float4 staticSwitch31_g5 = temp_output_9_0_g5;
-			#endif
-			float2 uv_TexCoord4_g5 = i.uv_texcoord * _BackSigilAlbedo_ST.xy + _BackSigilAlbedo_ST.zw;
-			float4 tex2DNode8_g5 = tex2D( _BackSigilAlbedo, ( float2( -1,1 ) * uv_TexCoord4_g5 ) );
-			float4 lerpResult11_g5 = lerp( temp_output_9_0_g5 , ( tex2DNode8_g5 * float4(1,1,1,0) ) , tex2DNode8_g5.a);
-			#ifdef _SIGILONBACK_ON
-				float4 staticSwitch30_g5 = lerpResult11_g5;
-			#else
-				float4 staticSwitch30_g5 = temp_output_9_0_g5;
-			#endif
-			float4 switchResult15_g5 = (((i.ASEVFace>0)?(staticSwitch31_g5):(staticSwitch30_g5)));
-			o.Albedo = switchResult15_g5.rgb;
-			o.Metallic = _Metallic;
-			o.Smoothness = _Smoothness;
-			float2 uv_BannerHoleMask = i.uv_texcoord * _BannerHoleMask_ST.xy + _BannerHoleMask_ST.zw;
-			o.Alpha = tex2D( _BannerHoleMask, uv_BannerHoleMask ).r;
+			float2 uv_BaseBannerNormal = i.uv_texcoord * _BaseBannerNormal_ST.xy + _BaseBannerNormal_ST.zw;
+			float4 tex2DNode46 = tex2D( _BaseBannerNormal, uv_BaseBannerNormal );
+			float2 uv_TexCoord5_g21 = i.uv_texcoord * float2( 1,1 ) + float2( -0.5,-0.5 );
+			float2 temp_output_9_0_g21 = ( ( uv_TexCoord5_g21 * ( 1.0 / _SigilScale ) ) + float2( 0.5,0.5 ) + _SigilOffset );
+			float2 clampResult12_g21 = clamp( temp_output_9_0_g21 , float2( -0.0001,-0.0001 ) , float2( 1.0001,1.0001 ) );
+			float4 tex2DNode14_g21 = tex2D( _SigilNormal, lerp(clampResult12_g21,temp_output_9_0_g21,_Tile) );
+			float4 lerpResult47 = lerp( tex2DNode46 , tex2DNode14_g21 , tex2DNode14_g21.a);
+			float4 switchResult19 = (((i.ASEVFace>0)?(lerpResult47):(tex2DNode46)));
+			o.Normal = switchResult19.rgb;
+			float2 uv_BaseBanner = i.uv_texcoord * _BaseBanner_ST.xy + _BaseBanner_ST.zw;
+			float4 tex2DNode20 = tex2D( _BaseBanner, uv_BaseBanner );
+			float4 temp_output_49_0 = ( _BannerColor * tex2DNode20 );
+			float2 uv_TexCoord5_g20 = i.uv_texcoord * float2( 1,1 ) + float2( -0.5,-0.5 );
+			float2 temp_output_9_0_g20 = ( ( uv_TexCoord5_g20 * ( 1.0 / _SigilScale ) ) + float2( 0.5,0.5 ) + _SigilOffset );
+			float2 clampResult12_g20 = clamp( temp_output_9_0_g20 , float2( -0.0001,-0.0001 ) , float2( 1.0001,1.0001 ) );
+			float4 tex2DNode14_g20 = tex2D( _Sigil, lerp(clampResult12_g20,temp_output_9_0_g20,_Tile) );
+			float4 lerpResult27 = lerp( temp_output_49_0 , tex2DNode14_g20 , tex2DNode14_g20.a);
+			float4 switchResult18 = (((i.ASEVFace>0)?(lerpResult27):(lerp(temp_output_49_0,lerpResult27,_TwoSidedSigil))));
+			o.Albedo = switchResult18.rgb;
+			float2 uv_Tear = i.uv_texcoord * _Tear_ST.xy + _Tear_ST.zw;
+			o.Alpha = ( tex2DNode20.a * tex2D( _Tear, uv_Tear ) ).r;
 		}
 
 		ENDCG
@@ -208,4 +176,5 @@ Shader "Aquarius Max/Advanced Banner Shader"
 		}
 	}
 	Fallback "Diffuse"
+	CustomEditor "ASEMaterialInspector"
 }
